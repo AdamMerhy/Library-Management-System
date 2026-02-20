@@ -18,10 +18,28 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// Google SSO
+var googleSection = builder.Configuration.GetSection("Authentication:Google");
+if (!string.IsNullOrEmpty(googleSection["ClientId"]))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleSection["ClientId"]!;
+            options.ClientSecret = googleSection["ClientSecret"]!;
+        });
+}
+
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("ManageBooks", policy =>
+        policy.RequireRole(SeedData.AdminRole, SeedData.LibrarianRole));
+
     options.AddPolicy("ManageLoans", policy =>
-        policy.RequireAuthenticatedUser());
+        policy.RequireRole(SeedData.AdminRole, SeedData.LibrarianRole));
+
+    options.AddPolicy("ManageUsers", policy =>
+        policy.RequireRole(SeedData.AdminRole));
 });
 
 builder.Services.AddScoped<IBookRepository, BookRepository>();
@@ -33,11 +51,16 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// Seed roles and dev data
+using (var scope = app.Services.CreateScope())
+{
+    await SeedData.InitialiseAsync(scope.ServiceProvider);
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

@@ -1,0 +1,69 @@
+@model IList<Loan>
+@{
+    ViewData["Title"] = "Loans";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Loans</h2>
+    <a asp-action="Checkout" class="btn btn-primary">+ Check Out a Book</a>
+</div>
+
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Book</th>
+            <th>Borrower</th>
+            <th>Borrowed</th>
+            <th>Due</th>
+            <th>Returned</th>
+            <th>Status</th>
+            <th style="width:120px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var loan in Model)
+        {
+            var isOverdue = loan.Status == LoanStatus.Borrowed
+                            && loan.DueAt.HasValue
+                            && loan.DueAt.Value < DateTime.UtcNow;
+            <tr class="@(isOverdue ? "table-danger" : "")">
+                <td>
+                    <a asp-controller="Books" asp-action="Details" asp-route-id="@loan.BookId">
+                        @loan.Book.Title
+                    </a>
+                </td>
+                <td>@loan.BorrowedByUser?.Email</td>
+                <td>@loan.BorrowedAt.ToString("dd MMM yyyy")</td>
+                <td>@(loan.DueAt?.ToString("dd MMM yyyy") ?? "—")</td>
+                <td>@(loan.ReturnedAt?.ToString("dd MMM yyyy") ?? "—")</td>
+                <td>
+                    @if (loan.Status == LoanStatus.Borrowed)
+                    {
+                        <span class="badge @(isOverdue ? "bg-danger" : "bg-warning text-dark")">
+                            @(isOverdue ? "Overdue" : "Borrowed")
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Returned</span>
+                    }
+                </td>
+                <td>
+                    @if (loan.Status == LoanStatus.Borrowed)
+                    {
+                        <form method="post" asp-action="Checkin" asp-route-id="@loan.Id">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                    onclick="return confirm('Check in this book?')">Check In</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No loans recorded yet.</div>
+}

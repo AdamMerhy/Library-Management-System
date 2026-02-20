@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace LibraryMVC.web.ViewModels;
 
@@ -25,6 +26,7 @@ public class BookCreateEditViewModel
     public string? Description { get; set; }
 
     [Display(Name = "Publish Year")]
+    [MaxCurrentYear(1000, ErrorMessage = "Publish year is invalid.")]
     public int? PublishYear { get; set; }
 
     [MaxLength(50)]
@@ -33,7 +35,14 @@ public class BookCreateEditViewModel
     [MaxLength(100), Display(Name = "Shelf Location")]
     public string? LocationShelf { get; set; }
 
-    [Range(0, int.MaxValue), Display(Name = "Total Copies")]
+    [MaxLength(500), Display(Name = "Cover Image URL")]
+    [Url(ErrorMessage = "Please enter a valid URL.")]
+    public string? CoverImageUrl { get; set; }
+
+    [Display(Name = "Upload Cover Image")]
+    public IFormFile? CoverImage { get; set; }
+
+    [Range(1, int.MaxValue, ErrorMessage = "Total copies must be at least 1."), Display(Name = "Total Copies")]
     public int TotalCopies { get; set; } = 1;
 
     [Range(0, int.MaxValue), Display(Name = "Available Copies")]

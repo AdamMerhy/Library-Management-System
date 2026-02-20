@@ -2,19 +2,24 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="text-center py-5">
-    <h1 class="display-4">&#128218; Mini Library Management System</h1>
-    <p class="lead mt-3">Browse, search and manage your book catalogue with ease.</p>
-    <hr class="my-4" />
+<div class="hero mb-5">
+    <h1 class="display-4 mb-3">📚 Mini Library</h1>
+    <p class="lead mb-4">Discover, borrow, and manage your favourite books — all in one place.</p>
     <div class="d-flex justify-content-center gap-3 flex-wrap">
-        <a asp-controller="Books" asp-action="Index" class="btn btn-primary btn-lg">Browse Books</a>
+        <a asp-controller="Books" asp-action="Index" class="btn btn-light btn-lg px-4">
+            Browse Books
+        </a>
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <a asp-controller="Search" asp-action="Ai" class="btn btn-outline-secondary btn-lg">AI Search Assistant</a>
+            <a asp-controller="Search" asp-action="Ai" class="btn btn-outline-light btn-lg px-4">
+                AI Search Assistant
+            </a>
         }
         else
         {
-            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-dark btn-lg">Login</a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg px-4">
+                Sign In
+            </a>
         }
     </div>
 </div>

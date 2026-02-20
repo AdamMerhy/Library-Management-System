@@ -7,6 +7,7 @@ public interface ILoanService
     Task<IList<Loan>> GetAllLoansAsync();
     Task<Book?> GetBookByIdAsync(int id);
     Task<IList<Loan>> GetLoansByBookIdAsync(int bookId);
+    Task<IList<Loan>> GetLoansByUserIdAsync(string userId);
     Task<IList<Book>> GetAvailableBooksAsync();
     Task<IList<ApplicationUser>> GetAllUsersAsync();
     Task<CheckoutResult> CheckoutAsync(int bookId, string userId, int? dueDays);

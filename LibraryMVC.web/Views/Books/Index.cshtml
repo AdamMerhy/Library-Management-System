@@ -3,108 +3,107 @@
     ViewData["Title"] = "Books";
 }
 
-<h2>Books</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold mb-0">Books</h2>
+    @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+    {
+        <a asp-action="Create" class="btn btn-primary">+ Add Book</a>
+    }
+</div>
 
-<form method="get" asp-action="Index" class="mb-4">
-    <div class="row g-2 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label">Search</label>
-            <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Title, Author, ISBN, Tags..." />
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Category</label>
-            <select name="Category" class="form-select">
-                <option value="">All</option>
-                @foreach (var cat in Model.Categories)
-                {
-                    <option value="@cat" selected="@(Model.Category == cat)">@cat</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-1">
-            <label class="form-label">Year Min</label>
-            <input type="number" name="PublishYearMin" value="@Model.PublishYearMin" class="form-control" />
-        </div>
-        <div class="col-md-1">
-            <label class="form-label">Year Max</label>
-            <input type="number" name="PublishYearMax" value="@Model.PublishYearMax" class="form-control" />
-        </div>
-        <div class="col-md-2">
-            <div class="form-check mt-4">
-                <input type="checkbox" name="AvailableOnly" value="true" class="form-check-input"
-                       checked="@Model.AvailableOnly" id="availOnly" />
-                <label class="form-check-label" for="availOnly">Available Only</label>
+<div class="filter-bar">
+    <form method="get" asp-action="Index">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Search</label>
+                <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control"
+                       placeholder="Title, Author, ISBN, Tags..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Category</label>
+                <select name="Category" class="form-select">
+                    <option value="">All</option>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <option value="@cat" selected="@(Model.Category == cat)">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted">Year Min</label>
+                <input type="number" name="PublishYearMin" value="@Model.PublishYearMin" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted">Year Max</label>
+                <input type="number" name="PublishYearMax" value="@Model.PublishYearMax" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="AvailableOnly" value="true" class="form-check-input"
+                           checked="@Model.AvailableOnly" id="availOnly" />
+                    <label class="form-check-label" for="availOnly">Available Only</label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted">Per Page</label>
+                <select name="PageSize" class="form-select">
+                    <option value="10" selected="@(Model.PageSize == 10)">10</option>
+                    <option value="20" selected="@(Model.PageSize == 20)">20</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
             </div>
         </div>
-        <div class="col-md-1">
-            <label class="form-label">Per Page</label>
-            <select name="PageSize" class="form-select">
-                <option value="10" selected="@(Model.PageSize == 10)">10</option>
-                <option value="20" selected="@(Model.PageSize == 20)">20</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Search</button>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
 
-@if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-{
-    <p>
-        <a asp-action="Create" class="btn btn-success">+ Add Book</a>
-    </p>
-}
+<p class="text-muted mb-3">@Model.TotalCount book(s) found</p>
 
 @if (!Model.Books.Any())
 {
-    <div class="alert alert-info">No books found.</div>
+    <div class="alert alert-info">No books found matching your filters.</div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Category</th>
-                    <th>Year</th>
-                    <th>Available</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var book in Model.Books)
-                {
-                    <tr>
-                        <td>@book.Title</td>
-                        <td>@book.Author</td>
-                        <td>@book.Category</td>
-                        <td>@book.PublishYear</td>
-                        <td>
-                            <span class="badge @(book.AvailableCopies > 0 ? "bg-success" : "bg-danger")">
-                                @book.AvailableCopies / @book.TotalCopies
-                            </span>
-                        </td>
-                        <td>
-                            <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-sm btn-outline-primary">Details</a>
-                            @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
-                            {
-                                <a asp-action="Edit" asp-route-id="@book.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                <a asp-action="Delete" asp-route-id="@book.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="book-grid">
+        @foreach (var book in Model.Books)
+        {
+            <a asp-action="Details" asp-route-id="@book.Id" class="book-card text-decoration-none text-reset">
+                <div class="book-card-cover-wrapper">
+                    @if (!string.IsNullOrWhiteSpace(book.CoverImageUrl))
+                    {
+                        <img src="@book.CoverImageUrl" alt="@book.Title" class="book-card-cover" />
+                    }
+                    else
+                    {
+                        <div class="cover-placeholder">📖</div>
+                    }
+                </div>
+                <div class="book-card-body">
+                    <div class="book-card-title">@book.Title</div>
+                    <div class="book-card-author">@book.Author</div>
+                    @if (!string.IsNullOrWhiteSpace(book.Category))
+                    {
+                        <span class="badge badge-category mb-2 align-self-start">@book.Category</span>
+                    }
+                    <div class="book-card-meta">
+                        @if (book.PublishYear.HasValue)
+                        {
+                            <small class="text-muted">@book.PublishYear</small>
+                        }
+                        <span class="badge @(book.AvailableCopies > 0 ? "badge-available" : "badge-unavailable")">
+                            @book.AvailableCopies / @book.TotalCopies
+                        </span>
+                    </div>
+                </div>
+            </a>
+        }
     </div>
 
-    @* Pagination *@
     @if (Model.TotalPages > 1)
     {
-        <nav>
+        <nav class="mt-4">
             <ul class="pagination justify-content-center">
                 @for (int p = 1; p <= Model.TotalPages; p++)
                 {

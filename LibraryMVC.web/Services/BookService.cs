@@ -8,10 +8,12 @@ namespace LibraryMVC.web.Services;
 public class BookService : IBookService
 {
     private readonly IBookRepository _bookRepository;
+    private readonly ILoanRepository _loanRepository;
 
-    public BookService(IBookRepository bookRepository)
+    public BookService(IBookRepository bookRepository, ILoanRepository loanRepository)
     {
         _bookRepository = bookRepository;
+        _loanRepository = loanRepository;
     }
 
     public async Task<BookListViewModel> GetFilteredBooksAsync(BookListViewModel vm)
@@ -71,6 +73,7 @@ public class BookService : IBookService
             PublishYear = vm.PublishYear,
             Language = vm.Language,
             LocationShelf = vm.LocationShelf,
+            CoverImageUrl = vm.CoverImageUrl,
             TotalCopies = vm.TotalCopies,
             AvailableCopies = vm.AvailableCopies
         };
@@ -96,6 +99,7 @@ public class BookService : IBookService
             PublishYear = book.PublishYear,
             Language = book.Language,
             LocationShelf = book.LocationShelf,
+            CoverImageUrl = book.CoverImageUrl,
             TotalCopies = book.TotalCopies,
             AvailableCopies = book.AvailableCopies
         };
@@ -115,6 +119,7 @@ public class BookService : IBookService
         book.PublishYear = vm.PublishYear;
         book.Language = vm.Language;
         book.LocationShelf = vm.LocationShelf;
+        book.CoverImageUrl = vm.CoverImageUrl;
         book.TotalCopies = vm.TotalCopies;
         book.AvailableCopies = vm.AvailableCopies;
         book.UpdatedAt = DateTime.UtcNow;
@@ -126,14 +131,23 @@ public class BookService : IBookService
     public async Task<Book?> GetBookForDeleteAsync(int id)
         => await _bookRepository.GetByIdAsync(id);
 
-    public async Task<bool> DeleteBookAsync(int id)
+    public async Task<DeleteBookResult> DeleteBookAsync(int id)
     {
         var book = await _bookRepository.FindAsync(id);
-        if (book is null) return false;
+        if (book is null)
+            return new DeleteBookResult { NotFound = true };
 
+        if (await _loanRepository.HasActiveLoansForBookAsync(id))
+            return new DeleteBookResult
+            {
+                ErrorMessage = $"Cannot delete '{book.Title}' — it has active loans. All copies must be returned first."
+            };
+
+        await _loanRepository.RemoveByBookIdAsync(id);
         _bookRepository.Remove(book);
         await _bookRepository.SaveChangesAsync();
-        return true;
+
+        return new DeleteBookResult { Succeeded = true };
     }
 
     public async Task<IList<Book>> SearchByFiltersAsync(AiSearchFilters f)

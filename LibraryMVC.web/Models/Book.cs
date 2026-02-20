@@ -33,6 +33,9 @@ public class Book
     [MaxLength(100), Display(Name = "Shelf Location")]
     public string? LocationShelf { get; set; }
 
+    [MaxLength(500), Display(Name = "Cover Image URL")]
+    public string? CoverImageUrl { get; set; }
+
     [Range(0, int.MaxValue), Display(Name = "Total Copies")]
     public int TotalCopies { get; set; } = 1;
 

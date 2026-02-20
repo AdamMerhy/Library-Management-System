@@ -1,0 +1,121 @@
+@model BookCreateEditViewModel
+@{
+    ViewData["Title"] = "Add Book";
+}
+
+<div class="form-page">
+    <h2 class="fw-bold mb-4">Add Book</h2>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="post" asp-action="Create" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label asp-for="Title" class="form-label"></label>
+                                <input asp-for="Title" class="form-control" />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="ISBN" class="form-label"></label>
+                                <input asp-for="ISBN" class="form-control" />
+                                <span asp-validation-for="ISBN" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Author" class="form-label"></label>
+                            <input asp-for="Author" class="form-control" />
+                            <span asp-validation-for="Author" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Category" class="form-label"></label>
+                                <input asp-for="Category" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Language" class="form-label"></label>
+                                <input asp-for="Language" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="PublishYear" class="form-label"></label>
+                                <input asp-for="PublishYear" class="form-control" type="number" />
+                                <span asp-validation-for="PublishYear" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CoverImage" class="form-label"></label>
+                            <input asp-for="CoverImage" class="form-control" type="file" accept=".jpg,.jpeg,.png,.gif,.webp"
+                                   onchange="previewFile(this)" />
+                            <span asp-validation-for="CoverImage" class="text-danger"></span>
+                            <img id="coverPreview" src="" alt="Preview" class="cover-preview" style="display:none;"
+                                 onerror="this.style.display='none';" />
+                            <small class="text-muted d-block mt-1">Max 5 MB · .jpg, .png, .gif, .webp</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CoverImageUrl" class="form-label">Or paste a URL</label>
+                            <input asp-for="CoverImageUrl" class="form-control"
+                                   placeholder="https://example.com/cover.jpg" />
+                            <span asp-validation-for="CoverImageUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Tags" class="form-label"></label>
+                            <input asp-for="Tags" class="form-control" placeholder="comma-separated, e.g. fiction, history" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="LocationShelf" class="form-label"></label>
+                                <input asp-for="LocationShelf" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="TotalCopies" class="form-label"></label>
+                                <input asp-for="TotalCopies" class="form-control" type="number" min="1" />
+                                <span asp-validation-for="TotalCopies" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="AvailableCopies" class="form-label"></label>
+                                <input asp-for="AvailableCopies" class="form-control" type="number" min="0" />
+                                <span asp-validation-for="AvailableCopies" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Add Book</button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewFile(input) {
+            const preview = document.getElementById('coverPreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    </script>
+}

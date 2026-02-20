@@ -31,6 +31,9 @@ public class LoanService : ILoanService
     public async Task<IList<Loan>> GetLoansByBookIdAsync(int bookId)
         => await _loanRepository.GetByBookIdWithUserAsync(bookId);
 
+    public async Task<IList<Loan>> GetLoansByUserIdAsync(string userId)
+        => await _loanRepository.GetByUserIdWithBookAsync(userId);
+
     public async Task<IList<Book>> GetAvailableBooksAsync()
         => await _bookRepository.GetAvailableBooksAsync();
 

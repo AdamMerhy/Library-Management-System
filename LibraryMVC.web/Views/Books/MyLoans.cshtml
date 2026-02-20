@@ -1,0 +1,62 @@
+@model IList<Loan>
+@{
+    ViewData["Title"] = "My Loans";
+}
+
+<h2 class="fw-bold mb-4">My Loans</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">You haven't borrowed any books yet. <a asp-action="Index">Browse books</a> to get started.</div>
+}
+else
+{
+    <div class="d-flex flex-column gap-3">
+        @{ var i = 0; }
+        @foreach (var loan in Model)
+        {
+            var isOverdue = loan.Status == LoanStatus.Borrowed
+                            && loan.DueAt.HasValue
+                            && loan.DueAt.Value < DateTime.UtcNow;
+            <div class="loan-card @(isOverdue ? "border-danger" : "")" style="animation-delay:@(i * 0.05)s;">
+                @if (!string.IsNullOrWhiteSpace(loan.Book.CoverImageUrl))
+                {
+                    <img src="@loan.Book.CoverImageUrl" alt="@loan.Book.Title" class="loan-card-cover" />
+                }
+                else
+                {
+                    <div class="loan-card-cover-placeholder">📖</div>
+                }
+                <div class="flex-grow-1">
+                    <a asp-action="Details" asp-route-id="@loan.BookId" class="fw-bold text-decoration-none">
+                        @loan.Book.Title
+                    </a>
+                    <div class="text-muted small">
+                        Borrowed @loan.BorrowedAt.ToString("dd MMM yyyy")
+                        @if (loan.DueAt.HasValue)
+                        {
+                            <span> · Due @loan.DueAt.Value.ToString("dd MMM yyyy")</span>
+                        }
+                        @if (loan.ReturnedAt.HasValue)
+                        {
+                            <span> · Returned @loan.ReturnedAt.Value.ToString("dd MMM yyyy")</span>
+                        }
+                    </div>
+                </div>
+                <div>
+                    @if (loan.Status == LoanStatus.Borrowed)
+                    {
+                        <span class="badge @(isOverdue ? "badge-unavailable" : "bg-warning text-dark")">
+                            @(isOverdue ? "Overdue" : "Borrowed")
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-available">Returned</span>
+                    }
+                </div>
+            </div>
+            i++;
+        }
+    </div>
+}

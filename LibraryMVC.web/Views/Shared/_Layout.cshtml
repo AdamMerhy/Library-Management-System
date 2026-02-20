@@ -29,6 +29,12 @@
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            @if (!User.IsInRole("Admin") && !User.IsInRole("Librarian"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Books" asp-action="MyLoans">My Loans</a>
+                                </li>
+                            }
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Search" asp-action="Ai">AI Search</a>
                             </li>

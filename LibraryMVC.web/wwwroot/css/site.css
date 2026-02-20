@@ -1,31 +1,405 @@
-html {
-  font-size: 14px;
+/* ===== BASE & TYPOGRAPHY ===== */
+:root {
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-dark: #3730a3;
+    --surface: #ffffff;
+    --surface-alt: #f8fafc;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 1rem;
+    --radius-sm: 0.5rem;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow: 0 4px 24px rgba(0,0,0,.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+    --transition: .3s cubic-bezier(.4,0,.2,1);
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
+html { font-size: 15px; scroll-behavior: smooth; }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--surface-alt);
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+main { flex: 1; }
+
+/* ===== FOCUS STATES ===== */
+.btn:focus, .btn:active:focus, .form-control:focus, .form-select:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, .25);
+    border-color: var(--primary-light);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* ===== NAVBAR ===== */
+.navbar {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    padding: .75rem 0;
+    backdrop-filter: blur(12px);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -.01em;
+}
+
+.nav-link {
+    transition: color var(--transition), transform var(--transition);
+    position: relative;
+    padding: .5rem .85rem !important;
+    border-radius: var(--radius-sm);
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,.1);
+    transform: translateY(-1px);
+}
+
+/* ===== CARDS ===== */
+.card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ===== BOOK CARD (grid listing) ===== */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.book-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: transform var(--transition), box-shadow var(--transition);
+    animation: fadeSlideUp .5s ease both;
+}
+
+.book-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow-lg);
+}
+
+.book-card-cover {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    transition: transform var(--transition);
+}
+
+.book-card:hover .book-card-cover {
+    transform: scale(1.05);
+}
+
+.book-card-cover-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.book-card-body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    margin-bottom: .35rem;
+    color: var(--text);
+}
+
+.book-card-author {
+    color: var(--text-muted);
+    font-size: .875rem;
+    margin-bottom: .75rem;
+}
+
+.book-card-meta {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+/* ===== PLACEHOLDER COVER ===== */
+.cover-placeholder {
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 50%, #a5b4fc 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: rgba(79, 70, 229, .35);
+}
+
+/* ===== STAGGER ANIMATION ===== */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.book-card:nth-child(1)  { animation-delay: .03s; }
+.book-card:nth-child(2)  { animation-delay: .06s; }
+.book-card:nth-child(3)  { animation-delay: .09s; }
+.book-card:nth-child(4)  { animation-delay: .12s; }
+.book-card:nth-child(5)  { animation-delay: .15s; }
+.book-card:nth-child(6)  { animation-delay: .18s; }
+.book-card:nth-child(7)  { animation-delay: .21s; }
+.book-card:nth-child(8)  { animation-delay: .24s; }
+.book-card:nth-child(9)  { animation-delay: .27s; }
+.book-card:nth-child(10) { animation-delay: .30s; }
+
+/* ===== BADGES ===== */
+.badge {
+    font-weight: 600;
+    padding: .35em .7em;
+    border-radius: 999px;
+    font-size: .78rem;
+    letter-spacing: .02em;
+}
+
+.badge-available { background: #dcfce7; color: #166534; }
+.badge-unavailable { background: #fee2e2; color: #991b1b; }
+.badge-category {
+    background: #ede9fe;
+    color: var(--primary-dark);
+    font-size: .75rem;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 100%);
+    color: white;
+    border-radius: var(--radius);
+    padding: 4rem 2rem;
+    text-align: center;
+    animation: fadeSlideUp .6s ease both;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.08), transparent 60%);
+    pointer-events: none;               /* ← allows clicks to pass through */
+}
+
+.hero h1 { font-weight: 800; letter-spacing: -.03em; position: relative; }
+.hero p  { opacity: .85; font-size: 1.15rem; position: relative; }
+
+/* ===== SEARCH / FILTER BAR ===== */
+.filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    animation: fadeSlideUp .4s ease both;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== DETAIL PAGE ===== */
+.detail-cover {
+    width: 100%;
+    max-width: 300px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    object-fit: cover;
+    animation: fadeSlideUp .5s ease both;
+}
+
+.detail-cover-placeholder {
+    width: 100%;
+    max-width: 300px;
+    height: 400px;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe, #a5b4fc);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    color: rgba(79, 70, 229, .3);
+    animation: fadeSlideUp .5s ease both;
+}
+
+.detail-info {
+    animation: fadeSlideUp .6s ease both;
+    animation-delay: .1s;
+}
+
+.detail-info dt {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: .15rem;
+}
+
+.detail-info dd {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+/* ===== MY LOANS CARDS ===== */
+.loan-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    transition: transform var(--transition), box-shadow var(--transition);
+    animation: fadeSlideUp .4s ease both;
+}
+
+.loan-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+
+.loan-card-cover {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.loan-card-cover-placeholder {
+    width: 60px;
+    height: 80px;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: rgba(79, 70, 229, .3);
+    flex-shrink: 0;
+}
+
+/* ===== FORM PAGES ===== */
+.form-page {
+    animation: fadeSlideUp .5s ease both;
+}
+
+.form-page .card {
+    border-radius: var(--radius);
+}
+
+.cover-preview {
+    max-width: 200px;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin-top: .5rem;
+    transition: opacity var(--transition);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: all var(--transition);
+    padding: .45rem 1.1rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* ===== PAGINATION ===== */
+.pagination .page-link {
+    border-radius: var(--radius-sm);
+    margin: 0 .15rem;
+    border: 1px solid var(--border);
+    color: var(--primary);
+    transition: all var(--transition);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+/* ===== ALERTS ===== */
+.alert {
+    border-radius: var(--radius-sm);
+    border: none;
+    animation: fadeSlideUp .3s ease both;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border) !important;
+    position: static !important;
+}
+
+footer.footer {
+    position: static;                   /* ← override any inherited absolute/fixed positioning */
+}
+
+body > .container {
+    flex: 1;                            /* ← fills remaining space so footer sits at content bottom */
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 575px) {
+    .book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    .hero { padding: 2.5rem 1.25rem; }
 }

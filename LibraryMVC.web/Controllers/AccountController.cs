@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using LibraryMVC.web.Data;
 using LibraryMVC.web.Models;
+using LibraryMVC.web.ViewModels;
 
 namespace LibraryMVC.web.Controllers;
 
@@ -18,6 +19,43 @@ public class AccountController : Controller
     {
         _signInManager = signInManager;
         _userManager = userManager;
+    }
+
+    // GET: /Account/Register
+    public IActionResult Register(string? returnUrl = null)
+    {
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
+    }
+
+    // POST: /Account/Register
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
+    {
+        ViewData["ReturnUrl"] = returnUrl;
+
+        if (!ModelState.IsValid)
+            return View(vm);
+
+        var user = new ApplicationUser
+        {
+            UserName = vm.Email,
+            Email = vm.Email,
+            FullName = vm.FullName,
+            EmailConfirmed = true
+        };
+
+        var result = await _userManager.CreateAsync(user, vm.Password);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+            return View(vm);
+        }
+
+        await _userManager.AddToRoleAsync(user, SeedData.MemberRole);
+        await _signInManager.SignInAsync(user, isPersistent: false);
+        return LocalRedirect(returnUrl ?? "/");
     }
 
     // GET: /Account/Login
