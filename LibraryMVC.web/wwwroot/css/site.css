@@ -371,6 +371,7 @@ main { flex: 1; }
 .pagination .page-item.active .page-link {
     background: var(--primary);
     border-color: var(--primary);
+    color: #fff;
 }
 
 /* ===== ALERTS ===== */

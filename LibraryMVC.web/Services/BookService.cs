@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using LibraryMVC.web.Models;
 using LibraryMVC.web.Repositories;
@@ -178,27 +179,32 @@ public class BookService : IBookService
         if (f.PublishYearMax.HasValue)
             query = query.Where(b => b.PublishYear <= f.PublishYearMax.Value);
 
-        if (f.Tags is { Count: > 0 })
-        {
-            foreach (var tag in f.Tags)
-            {
-                var t = tag;
-                query = query.Where(b => b.Tags != null && b.Tags.Contains(t));
-            }
-        }
+        var allTerms = new List<string>();
 
         if (f.Keywords is { Count: > 0 })
+            allTerms.AddRange(f.Keywords);
+
+        if (f.Tags is { Count: > 0 })
+            allTerms.AddRange(f.Tags);
+
+        if (allTerms.Count > 0)
+            query = query.Where(BuildKeywordPredicate(allTerms));
+
+        var limit = f.Limit > 0 ? f.Limit : 20;
+
+        // When multiple keywords exist, fetch extra candidates and rank by relevance
+        // so books matching MORE keywords appear first.
+        if (allTerms.Count > 1)
         {
-            foreach (var kw in f.Keywords)
-            {
-                var k = kw;
-                query = query.Where(b =>
-                    b.Title.Contains(k) ||
-                    b.Author.Contains(k) ||
-                    (b.Description != null && b.Description.Contains(k)) ||
-                    (b.Tags != null && b.Tags.Contains(k)) ||
-                    (b.Category != null && b.Category.Contains(k)));
-            }
+            var candidates = await query
+                .Take(limit * 3)
+                .ToListAsync();
+
+            return candidates
+                .OrderByDescending(b => ComputeRelevanceScore(b, allTerms))
+                .ThenBy(b => b.Title)
+                .Take(limit)
+                .ToList();
         }
 
         query = f.SortBy?.ToLowerInvariant() switch
@@ -208,7 +214,59 @@ public class BookService : IBookService
             _ => query.OrderBy(b => b.Title)
         };
 
-        var limit = f.Limit > 0 ? f.Limit : 20;
         return await query.Take(limit).ToListAsync();
+    }
+
+    /// <summary>
+    /// Counts how many distinct keywords appear anywhere in the book's searchable text.
+    /// Books matching more keywords are ranked higher.
+    /// </summary>
+    private static int ComputeRelevanceScore(Book book, IList<string> keywords)
+    {
+        var searchableText = string.Join('\n',
+            book.Title, book.Author,
+            book.Description ?? "", book.Tags ?? "", book.Category ?? "");
+
+        return keywords.Count(kw =>
+            searchableText.Contains(kw, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Builds: b => b.Title.Contains("kw1") || b.Author.Contains("kw1") || ...
+    ///           || b.Title.Contains("kw2") || b.Author.Contains("kw2") || ...
+    /// Each keyword is a constant, so EF Core translates every term to a SQL LIKE.
+    /// </summary>
+    private static Expression<Func<Book, bool>> BuildKeywordPredicate(IList<string> keywords)
+    {
+        var param = Expression.Parameter(typeof(Book), "b");
+        var containsMethod = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) })!;
+        var nullConst = Expression.Constant(null, typeof(string));
+
+        Expression? predicate = null;
+
+        foreach (var keyword in keywords)
+        {
+            var kwConst = Expression.Constant(keyword);
+
+            // Required fields (never null): Title, Author
+            Expression match = Expression.Call(
+                Expression.Property(param, nameof(Book.Title)), containsMethod, kwConst);
+            match = Expression.OrElse(match, Expression.Call(
+                Expression.Property(param, nameof(Book.Author)), containsMethod, kwConst));
+
+            // Nullable fields: Description, Tags, Category
+            foreach (var field in new[] { nameof(Book.Description), nameof(Book.Tags), nameof(Book.Category) })
+            {
+                var prop = Expression.Property(param, field);
+                var nullSafeContains = Expression.AndAlso(
+                    Expression.NotEqual(prop, nullConst),
+                    Expression.Call(prop, containsMethod, kwConst));
+                match = Expression.OrElse(match, nullSafeContains);
+            }
+
+            predicate = predicate is null ? match : Expression.OrElse(predicate, match);
+        }
+
+        return Expression.Lambda<Func<Book, bool>>(predicate!, param);
     }
 }

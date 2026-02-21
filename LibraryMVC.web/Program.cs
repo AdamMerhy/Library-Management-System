@@ -47,6 +47,16 @@ builder.Services.AddScoped<ILoanRepository, LoanRepository>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 
+// Groq-powered AI search
+builder.Services.AddHttpClient<IAiSearchInterpreter, GroqAiSearchInterpreter>(client =>
+{
+    client.BaseAddress = new Uri("https://api.groq.com/");
+    client.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", builder.Configuration["Groq:ApiKey"]);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -54,6 +64,8 @@ var app = builder.Build();
 // Seed roles and dev data
 using (var scope = app.Services.CreateScope())
 {
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
     await SeedData.InitialiseAsync(scope.ServiceProvider);
 }
 

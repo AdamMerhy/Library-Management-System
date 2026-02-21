@@ -17,28 +17,19 @@ public class SearchController : Controller
         _bookService = bookService;
     }
 
-    // GET: /Search/Ai
-    public IActionResult Ai()
+    // GET: /Search/Ai  or  /Search/Ai?prompt=french+food+books
+    public async Task<IActionResult> Ai(string? prompt)
     {
-        return View(new AiSearchViewModel());
-    }
+        var vm = new AiSearchViewModel { Prompt = prompt };
 
-    // POST: /Search/Ai
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Ai(AiSearchViewModel vm)
-    {
-        if (string.IsNullOrWhiteSpace(vm.Prompt))
+        if (!string.IsNullOrWhiteSpace(prompt))
         {
-            ModelState.AddModelError(nameof(vm.Prompt), "Please enter a search query.");
-            return View(vm);
+            var result = await _aiInterpreter.InterpretAsync(prompt);
+            vm.ParsedFilters = result.Filters;
+            vm.Explanation = result.Explanation;
+            vm.UsedFallback = result.UsedFallback;
+            vm.Results = await _bookService.SearchByFiltersAsync(result.Filters);
         }
-
-        var result = await _aiInterpreter.InterpretAsync(vm.Prompt);
-        vm.ParsedFilters = result.Filters;
-        vm.Explanation = result.Explanation;
-        vm.UsedFallback = result.UsedFallback;
-
-        vm.Results = await _bookService.SearchByFiltersAsync(result.Filters);
 
         return View(vm);
     }
