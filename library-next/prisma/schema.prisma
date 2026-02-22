@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  role           String    @default("Member") // Admin | Librarian | Member
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  accounts       Account[]
+  loans          Loan[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Book {
+  id              Int      @id @default(autoincrement())
+  title           String
+  author          String
+  isbn            String?
+  category        String?
+  tags            String?
+  description     String?
+  publishYear     Int?
+  language        String?
+  locationShelf   String?
+  coverImageUrl   String?
+  totalCopies     Int      @default(1)
+  availableCopies Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  loans           Loan[]
+
+  @@index([title])
+  @@index([author])
+  @@index([isbn])
+  @@index([category])
+}
+
+model Loan {
+  id               Int       @id @default(autoincrement())
+  bookId           Int
+  borrowedByUserId String
+  borrowedAt       DateTime  @default(now())
+  dueAt            DateTime?
+  returnedAt       DateTime?
+  status           String    @default("Borrowed") // Borrowed | Returned
+  book             Book      @relation(fields: [bookId], references: [id], onDelete: Restrict)
+  borrowedByUser   User      @relation(fields: [borrowedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([bookId])
+  @@index([borrowedByUserId])
+}
