@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
     ],
   },
   env: {
-    AUTH_URL: process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
+    AUTH_URL: process.env.VERCEL
+      ? "https://library-management-system-iota-tan.vercel.app"
       : process.env.AUTH_URL,
   },
 };
