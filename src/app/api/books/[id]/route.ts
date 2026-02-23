@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import path from "path";
+import { put, del } from "@vercel/blob";
 
 export async function PUT(
   req: Request,
@@ -44,22 +43,15 @@ export async function PUT(
         { status: 400 }
       );
     }
-    // Delete old local file if it exists
-    if (existing.coverImageUrl?.startsWith("/uploads/")) {
-      try {
-        await unlink(
-          path.join(process.cwd(), "public", existing.coverImageUrl)
-        );
-      } catch {}
+    // Delete old blob if it exists
+    if (existing.coverImageUrl?.includes("vercel-storage.com") || existing.coverImageUrl?.includes("blob.vercel-storage")) {
+      try { await del(existing.coverImageUrl); } catch {}
     }
 
-    const ext = path.extname(coverImage.name);
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-    const bytes = await coverImage.arrayBuffer();
-    await writeFile(path.join(uploadsDir, filename), Buffer.from(bytes));
-    coverImageUrl = `/uploads/${filename}`;
+    const blob = await put(`book-covers/${Date.now()}-${coverImage.name}`, coverImage, {
+      access: "public",
+    });
+    coverImageUrl = blob.url;
   }
 
   const publishYear = formData.get("publishYear")
@@ -124,11 +116,9 @@ export async function DELETE(
   // Delete all loans for this book, then the book
   await prisma.loan.deleteMany({ where: { bookId: bookId } });
 
-  // Delete local cover if it exists
-  if (book.coverImageUrl?.startsWith("/uploads/")) {
-    try {
-      await unlink(path.join(process.cwd(), "public", book.coverImageUrl));
-    } catch {}
+  // Delete blob cover if it exists
+  if (book.coverImageUrl?.includes("vercel-storage.com") || book.coverImageUrl?.includes("blob.vercel-storage")) {
+    try { await del(book.coverImageUrl); } catch {}
   }
 
   await prisma.book.delete({ where: { id: bookId } });

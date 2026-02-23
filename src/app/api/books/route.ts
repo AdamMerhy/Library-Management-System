@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
 
   let coverImageUrl = (formData.get("coverImageUrl") as string) || null;
 
-  // Handle file upload
+  // Handle file upload via Vercel Blob
   const coverImage = formData.get("coverImage") as File | null;
   if (coverImage && coverImage.size > 0) {
     if (coverImage.size > 5 * 1024 * 1024) {
@@ -33,13 +32,10 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const ext = path.extname(coverImage.name);
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-    const bytes = await coverImage.arrayBuffer();
-    await writeFile(path.join(uploadsDir, filename), Buffer.from(bytes));
-    coverImageUrl = `/uploads/${filename}`;
+    const blob = await put(`book-covers/${Date.now()}-${coverImage.name}`, coverImage, {
+      access: "public",
+    });
+    coverImageUrl = blob.url;
   }
 
   const publishYear = formData.get("publishYear")
