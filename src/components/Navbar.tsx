@@ -80,7 +80,7 @@ export default function Navbar() {
               <>
                 <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.85rem", padding: "0 0.5rem", fontWeight: 500 }}>{user.name ?? user.email}</span>
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => signOut({ callbackUrl: "https://library-management-system-iota-tan.vercel.app/" })}
                   className="btn btn-outline-light btn-sm"
                 >
                   Logout
