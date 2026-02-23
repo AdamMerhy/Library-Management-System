@@ -31,7 +31,7 @@ A library management system where users can browse books, borrow them, and searc
 
 ```bash
 git clone https://github.com/AdamMerhy/Library-Management-System.git
-cd Library-Management-System/library-next
+cd Library-Management-System
 ```
 
 ### 2. Install dependencies
@@ -42,7 +42,7 @@ npm install
 
 ### 3. Set up environment variables
 
-Create a `.env` file in the `library-next` folder (or edit the existing one):
+Create a `.env` file in the project root (or edit the existing one):
 
 ```env
 DATABASE_URL="file:./dev.db"
@@ -90,7 +90,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Project Structure
 
 ```
-library-next/
 ├── prisma/
 │   ├── schema.prisma        # Database models (User, Book, Loan, Account)
 │   └── seed.ts              # Sample book data
