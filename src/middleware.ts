@@ -1,10 +1,11 @@
-import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextResponse, type NextRequest } from "next/server";
 
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const user = req.auth?.user as any;
-  const isLoggedIn = !!user;
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const isLoggedIn = !!token;
+  const role = (token?.role as string) ?? "Member";
 
   // Protected routes that require login
   const authRoutes = ["/my-loans", "/search/ai"];
@@ -19,20 +20,20 @@ export default auth((req) => {
 
   if (adminRoutes.some((r) => pathname.startsWith(r))) {
     if (!isLoggedIn) return NextResponse.redirect(new URL("/login", req.url));
-    if (user.role !== "Admin") {
+    if (role !== "Admin") {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }
 
   if (staffRoutes.some((r) => pathname.startsWith(r))) {
     if (!isLoggedIn) return NextResponse.redirect(new URL("/login", req.url));
-    if (user.role !== "Admin" && user.role !== "Librarian") {
+    if (role !== "Admin" && role !== "Librarian") {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [
