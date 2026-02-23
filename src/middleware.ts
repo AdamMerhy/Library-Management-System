@@ -3,7 +3,18 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+
+  let token = null;
+  try {
+    token = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET,
+      secureCookie: process.env.NODE_ENV === "production",
+    });
+  } catch {
+    // Token decode failed — treat as not logged in
+  }
+
   const isLoggedIn = !!token;
   const role = (token?.role as string) ?? "Member";
 
