@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { put } from "@vercel/blob"; 
 
 export async function POST(req: Request) {
   const session = await auth();
