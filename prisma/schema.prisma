@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,7 +13,7 @@ model User {
   email          String    @unique
   emailVerified  DateTime?
   hashedPassword String?
-  role           String    @default("Member") // Admin | Librarian | Member
+  role           String    @default("Member")
   image          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -70,9 +70,9 @@ model Loan {
   borrowedAt       DateTime  @default(now())
   dueAt            DateTime?
   returnedAt       DateTime?
-  status           String    @default("Borrowed") // Borrowed | Returned
-  book             Book      @relation(fields: [bookId], references: [id], onDelete: Restrict)
-  borrowedByUser   User      @relation(fields: [borrowedByUserId], references: [id], onDelete: Restrict)
+  status           String    @default("Borrowed")
+  book             Book      @relation(fields: [bookId], references: [id])
+  borrowedByUser   User      @relation(fields: [borrowedByUserId], references: [id])
 
   @@index([bookId])
   @@index([borrowedByUserId])
